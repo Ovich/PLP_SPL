@@ -49,28 +49,28 @@ import LexerMin
 -- Règles de la grammaire 
 
 Exp : let var "=" Exp in Exp   { Let $2 $4 $6   }
-    | Exp ">=" Exp             { Bin ">=" $1 $3 }
-    | Exp "<=" Exp             { Bin "<=" $1 $3 } 
     | def var "=" Exp          { DefVar $2 $4 }
-    | def func Args "=" Exp    { DefFn $2 $3 $5 }   
+    | def func Args "=" Exp    { DefFn $2 $3 $5 }  
+    | if Exp then Exp else Exp { If $2 $4 $6    } 
+    | func '(' Exps ')'        { App $1 $3      } 
     | Exp "+" Exp              { Bin "+" $1 $3  }
     | Exp "-" Exp              { Bin "-" $1 $3  }     
-    | "-" Exp                  { Unary "-" $2   }
     | Exp "*" Exp              { Bin "*" $1 $3  }
     | Exp "/" Exp              { Bin "/" $1 $3  } 	
     | Exp "%" Exp              { Bin "%" $1 $3  }
     | Exp "^" Exp              { Bin "^" $1 $3  }
-    | Exp "++"                 { PostInc "++" $1}
-    | "++" Exp                 { PreInc "++" $2 }
     | Exp "==" Exp             { Bin "==" $1 $3 }
     | Exp "!=" Exp             { Bin "!=" $1 $3 }
     | Exp "<" Exp              { Bin "<" $1 $3  }
     | Exp ">" Exp              { Bin ">" $1 $3  }
+    | Exp ">=" Exp             { Bin ">=" $1 $3 }
+    | Exp "<=" Exp             { Bin "<=" $1 $3 }
+    | "-" Exp                  { Unary "-" $2   }
+    | Exp "++"                 { PostInc "++" $1}
+    | "++" Exp                 { PreInc "++" $2 }
+    | Exp "!"                  { Unary "!" $1   }
     | int                      { Cst $1         }     
     | var                      { Var $1         }      
-    | if Exp then Exp else Exp { If $2 $4 $6    }
-    | Exp "!"                  { Unary "!" $1   }
-    | func '(' Exps ')'        { App $1 $3      }
 
 Exps : Exp                     { [$1] }
      | Exp ',' Exps            { $1:$3 }

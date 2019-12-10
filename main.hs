@@ -19,7 +19,8 @@ introMessage = "\n" ++ languageName ++ " \
 \Ready : To exit type 'EXIT' \n\n \
 \Predefined Fonctions \t:\tsucc(X), pred(X), fact(X), add(X), sub(X), pow(X), abs(X), sum(X), even(X), \n \
 \\t\t\t\tcollatz(X), div(X), modulos(X), ackermann(X,Y)  \n\n \
-\Identifier rules \t:\tFonction name starts with lowercase | Var name starts with uppercase \n \
+\Identifier rules \t:\tFonction name starts with lowercase\n\ 
+\\t\t\t\tVar name starts with uppercase (dont call it EXIT)\n \
 \Fonction Definition \t:\tdef [name] [Args] = [Exp] \t - Exemple : def test X = X + 1 \n \
 \Variable Definition \t:\tdef [name] = [Exp] \t\t - Exemple : def Test = 1 \n\n \
 \Fonction Execution \t:\tname(Args) \t\t\t - Exemple : test(2) \n \
@@ -160,6 +161,9 @@ main' env display =
     putStr $ (languageName ++ " > ")
     s <- getLine
     if s /= "EXIT" then
-        let exp = parser $ lexer s in runtime exp env
+        if length s < 1 then 
+            main' env "Expression too short... try again" 
+        else 
+            let exp = parser $ lexer s in runtime exp env
     else 
         return ()
