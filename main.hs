@@ -104,11 +104,11 @@ eval (Bin "%" x y) env = (eval x env) `mod` (eval y env)
 -- Gestion des évaluations binaires booleenes
 -- (0 - False | 1 - True)
 eval (Bin "==" x y ) env = bool (==) (eval x env) (eval y env)
-eval (Bin ">" x y ) env = if (eval x env) > (eval y env) then 1 else 0
-eval (Bin "<" x y ) env = if (eval x env) < (eval y env) then 1 else 0
-eval (Bin ">=" x y ) env = if (eval x env) >= (eval y env) then 1 else 0
-eval (Bin "<=" x y ) env = if (eval x env) <= (eval y env) then 1 else 0
-eval (Bin "!=" x y ) env = if (eval x env) /= (eval y env) then 1 else 0
+eval (Bin ">" x y ) env = bool (>) (eval x env) (eval y env)
+eval (Bin "<" x y ) env = bool (<) (eval x env) (eval y env)
+eval (Bin ">=" x y ) env = bool (>=) (eval x env) (eval y env)
+eval (Bin "<=" x y ) env = bool (<=) (eval x env) (eval y env)
+eval (Bin "!=" x y ) env = bool (/=) (eval x env) (eval y env)
 
 -- Evaluation des opérations unaires
 eval (Unary "-" x) env = - eval x env
