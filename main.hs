@@ -115,7 +115,8 @@ eval (Bin "!=" x y ) env = bool (/=) (eval x env) (eval y env)
 
 -- Evaluation des opérations unaires
 eval (Unary "-" x) env = - eval x env
-eval (Unary "++" x) env = (eval x env) + 1
+eval (PostInc "++" x) env = (eval x env) + 1 
+eval (PreInc "++" x) env = (eval x env) + 1 
 eval (Unary "!" x) env = fact (eval x env)
 
 -- Evaluation des conditions (if)
@@ -127,22 +128,26 @@ eval (App func xs) env = eval x (expand env vars xs) where (vars,x) = extract fu
 def (DefVar name exp) (vars,funcs) =  ((name, eval exp env):vars,funcs)
 def (DefFn name args body) (vars,funcs) = (vars, ((name,args,body):funcs))
 
--- La Fonction runtime gérè les les cas de figures se produisant dans le main
--- Elle gére les valeurs evalués a afficher ou des extentions d'environement 
--- selon les cas de figures
+-- La Fonction runtime s'occupe de gestion des expressions
+-- Elle gére les expressions à evalués et envoyer au main pour l'affichage 
+-- ou les expressions qui étendent l'environement : def et ++
 runtime exp env =
     do 
         case exp of
             DefFn name _ _ 
-                -> let new_env = def exp env in main' new_env ("Fonction '" ++ name ++ "' defined!") 
+                -> let new_env = def exp env in main' new_env $ "Fonction '" ++ name ++ "' defined!"
             DefVar name _  
-                -> let new_env = def exp env in main' new_env ("Variable '" ++ name ++ "' defined!") 
-            Unary "++" (Var name)
-                -> let incremented = (eval exp env) -- Operateur d'incrémentation nécecite une extention de l'environement
+                -> let new_env = def exp env in main' new_env $ "Variable '" ++ name ++ "' defined!"
+            PreInc "++" (Var name)
+                -> let incremented = (eval exp env) -- Pré incrémentation renvoi la valeur incrémentée et etends l'environement
                        new_env = def (DefVar (name) (Cst incremented)) env 
                      in main' new_env (show incremented) 
+            PostInc "++" (Var name)
+                -> let val = value name env -- On récupère la valeur avant l'incrémentation et on étends l'environement par la suite
+                       new_env = def (DefVar (name) (Cst (eval exp env))) env 
+                     in main' new_env (show val) 
             _ 
-                -> main' env $ show $ eval exp env
+                -> main' env $ show $ eval exp env -- Toute expression necessitant que l'evaluation
 
 main = main' env introMessage
 main' env display = 

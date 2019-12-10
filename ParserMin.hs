@@ -659,7 +659,7 @@ happyReduce_12 = happySpecReduce_2  4 happyReduction_12
 happyReduction_12 _
 	(HappyAbsSyn4  happy_var_1)
 	 =  HappyAbsSyn4
-		 (Unary "++" happy_var_1
+		 (PostInc "++" happy_var_1
 	)
 happyReduction_12 _ _  = notHappyAtAll 
 
@@ -667,7 +667,7 @@ happyReduce_13 = happySpecReduce_2  4 happyReduction_13
 happyReduction_13 (HappyAbsSyn4  happy_var_2)
 	_
 	 =  HappyAbsSyn4
-		 (Unary "++" happy_var_2
+		 (PreInc "++" happy_var_2
 	)
 happyReduction_13 _ _  = notHappyAtAll 
 
@@ -854,7 +854,7 @@ parseError _ = error "Parse error"
 
 -- Définition du type Exp utilisé pour construire l'arbre syntaxique. 
 data Exp = Let Name Exp Exp | Bin Name Exp Exp | Cst Int | Var Name | 
-      Unary Name Exp | If Exp Exp Exp | App Name [Exp] | DefFn Name [Name] Exp | DefVar Name Exp deriving Show
+      Unary Name Exp | PreInc Name Exp | PostInc Name Exp | If Exp Exp Exp | App Name [Exp] | DefFn Name [Name] Exp | DefVar Name Exp deriving Show
 {-# LINE 1 "templates\GenericTemplate.hs" #-}
 {-# LINE 1 "templates\\\\GenericTemplate.hs" #-}
 {-# LINE 1 "<built-in>" #-}
