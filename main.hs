@@ -129,7 +129,7 @@ def (DefFn name args body) (vars,funcs) = (vars, ((name,args,body):funcs))
 
 -- La Fonction runtime gérè les les cas de figures se produisant dans le main
 -- Elle gére les valeurs evalués a afficher ou des extentions d'environement 
--- selon les cas de figure
+-- selon les cas de figures
 runtime exp env =
     do 
         case exp of
@@ -142,8 +142,7 @@ runtime exp env =
                        new_env = def (DefVar (name) (Cst incremented)) env 
                      in main' new_env (show incremented) 
             _ 
-                -> putStrLn $ show ( eval exp env )
-        main' env ""
+                -> main' env $ show $ eval exp env
 
 main = main' env introMessage
 main' env display = 
