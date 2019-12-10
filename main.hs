@@ -161,7 +161,7 @@ main' env display =
     putStr $ (languageName ++ " > ")
     s <- getLine
     if s /= "EXIT" then
-        if length s < 1 then 
+        if length s <= 3 then 
             main' env "Expression too short... try again" 
         else 
             let exp = parser $ lexer s in runtime exp env
