@@ -16,7 +16,16 @@ import LexerMin
 
 -- Nom du Language
 languageName = "SPL"
-introMessage = "\n" ++ languageName ++ " Ready : To exit type 'EXIT' \n Identifier rules \t\t : Fonction name starts with lowercase | Var name starts with uppercase \n Predefined Fonctions \t\t : succ(X), pred(X), fact(X) \n Fonction Definition \t\t : def [name] [Args] = [body] \t - Exemple : def test X = X + 1 \n Fonction Execution \t\t : name(Args) \t\t\t - Exemple : test(2) \n Available Operators \t\t : (+|-|*|<|>|==)"
+introMessage = "\n" ++ languageName ++ " \ 
+\Ready : To exit type 'EXIT' \n\n \
+\Predefined Fonctions \t:\tsucc(X), pred(X), fact(X), add(X), sub(X), pow(X), abs(X), sum(X), even(X), \n \
+\\t\t\t\tcollatz(X), div(X), modulos(X), ackermann(X,Y)  \n\n \
+\Identifier rules \t:\tFonction name starts with lowercase | Var name starts with uppercase \n \
+\Fonction Definition \t:\tdef [name] [Args] = [Exp] \t - Exemple : def test X = X + 1 \n \
+\Variable Definition \t:\tdef [name] = [Exp] \t\t - Exemple : def Test = 1 \n\n \
+\Fonction Execution \t:\tname(Args) \t\t\t - Exemple : test(2) \n \
+\Available Operators \t:\tBinary Ops ( + | - | * | / | ^ | % | < | <= | > | >= | == | != )\n\
+\\t\t\t\tUnary Ops  ( - | ++ (postfix and prefix) | ! )\n\n"
 
 -- Variables utilisées
 vars = [("X", 12), ("Y", 23), ("Xy", 32)]
@@ -125,11 +134,11 @@ eval (If cond x y) env = if eval cond env > 0 then eval x env else eval y env
 eval (App func xs) env = eval x (expand env vars xs) where (vars,x) = extract func env
 
 -- Variables et Fonctions définies par le développeur
-def (DefVar name exp) (vars,funcs) =  ((name, eval exp env):vars,funcs)
+def (DefVar name exp) (vars,funcs) = ((name, eval exp env):vars,funcs)
 def (DefFn name args body) (vars,funcs) = (vars, ((name,args,body):funcs))
 
 -- La Fonction runtime s'occupe de gestion des expressions
--- Elle gére les expressions à evalués et envoyer au main pour l'affichage 
+-- Elle gère les expressions à evaluer et envoyer la valeur au main pour l'affichage 
 -- ou les expressions qui étendent l'environement : def et ++
 runtime exp env =
     do 
@@ -146,8 +155,7 @@ runtime exp env =
                 -> let val = value name env -- On récupère la valeur avant l'incrémentation et on étends l'environement par la suite
                        new_env = def (DefVar (name) (Cst (eval exp env))) env 
                      in main' new_env (show val) 
-            _ 
-                -> main' env $ show $ eval exp env -- Toute expression necessitant que l'evaluation
+            _   -> main' env $ show $ eval exp env -- Toute expression necessitant que l'evaluation
 
 main = main' env introMessage
 main' env display = 
