@@ -16,6 +16,7 @@ import LexerMin
 
 -- Nom du Language
 languageName = "SPL"
+introMessage = "\n" ++ languageName ++ " Ready : To exit type 'EXIT' \n Identifier rules \t\t : Fonction name starts with lowercase | Var name starts with uppercase \n Predefined Fonctions \t\t : succ(X), pred(X), fact(X) \n Fonction Definition \t\t : def [name] [Args] = [body] \t - Exemple : def test X = X + 1 \n Fonction Execution \t\t : name(Args) \t\t\t - Exemple : test(2) \n Available Operators \t\t : (+|-|*|<|>|==)"
 
 -- Variables utilisées
 vars = [("X", 12), ("Y", 23), ("Xy", 32)]
@@ -124,7 +125,7 @@ eval (App func xs) env = eval x (expand env vars xs) where (vars,x) = extract fu
 def (DefVar name exp) (vars,funcs) =  ((name, eval exp env):vars,funcs)
 def (DefFn name args body) (vars,funcs) = (vars, ((name,args,body):funcs))
 
-main = main' env ("\n" ++ languageName ++ " Ready : To exit type 'EXIT' \n Identifier rules \t\t : Fonction name starts with lowercase | Var name starts with uppercase \n Predefined Fonctions \t\t : succ(X), pred(X), fact(X) \n Fonction Definition \t\t : def [name] [Args] = [body] \t - Exemple : def test X = X + 1 \n Fonction Execution \t\t : name(Args) \t\t\t - Exemple : test(2) \n Available Operators \t\t : (+|-|*|<|>|==)")
+main = main' env introMessage
 main' env display = 
   do
     putStrLn $ display
@@ -135,7 +136,7 @@ main' env display =
             let exp = parser $ lexer s
             case exp of
                 DefFn name _ _ -> let new_env = def exp env in main' new_env ("Fonction '" ++ name ++ "' defined!") 
-                DefVar name _ -> let new_env = def exp env in main' new_env ("Variable '" ++ name ++ "' defined!") 
+                DefVar name _  -> let new_env = def exp env in main' new_env ("Variable '" ++ name ++ "' defined!") 
                 Unary "++" (Var name) -> let incremented = (eval exp env) -- Operateur d'incrémentation nécecite une extention de l'environement
                                              new_env = def (DefVar (name) (Cst incremented)) env 
                                              in main' new_env (show incremented) 
