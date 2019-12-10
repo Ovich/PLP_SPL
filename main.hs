@@ -125,18 +125,18 @@ eval (App func xs) env = eval x (expand env vars xs) where (vars,x) = extract fu
 def (DefVar name exp) (vars,funcs) =  ((name, eval exp env):vars,funcs)
 def (DefFn name args body) (vars,funcs) = (vars, ((name,args,body):funcs))
 
-main = main' env ("\n" ++ languageName ++ " Ready : To exit type 'EXIT' \n Identifier rules \t\t : Fonction name starts with lowercase | Var name starts with uppercase \n Predefined Fonctions \t\t : succ(X), pred(X), fact(X) \n Fonction Definition \t\t : def [name] [Args] = [body] \t - Exemple : def test X = X + 1 \n Fonction Execution \t\t : name(Args) \t\t\t - Exemple : test(2) \n Available Operators \t\t : (+|-|*|<|>|==) \n")
+main = main' env ("\n" ++ languageName ++ " Ready : To exit type 'EXIT' \n Identifier rules \t\t : Fonction name starts with lowercase | Var name starts with uppercase \n Predefined Fonctions \t\t : succ(X), pred(X), fact(X) \n Fonction Definition \t\t : def [name] [Args] = [body] \t - Exemple : def test X = X + 1 \n Fonction Execution \t\t : name(Args) \t\t\t - Exemple : test(2) \n Available Operators \t\t : (+|-|*|<|>|==)")
 main' env label = 
   do
-    putStr $ label
-    putStr $ languageName ++ " > "
+    putStrLn $ label
+    putStr $ (languageName ++ " > ")
     s <- getLine
     if s /= "EXIT" then
         do 
             let exp = parser $ lexer s
             case exp of
-                DefFn name _ _ -> let new_env = def exp env in main' new_env ("Fonction '" ++ name ++ "' defined!\n") 
-                DefVar name _ -> let new_env = def exp env in main' new_env ("Variable '" ++ name ++ "' defined!\n") 
+                DefFn name _ _ -> let new_env = def exp env in main' new_env ("Fonction '" ++ name ++ "' defined!") 
+                DefVar name _ -> let new_env = def exp env in main' new_env ("Variable '" ++ name ++ "' defined!") 
                 _ -> putStrLn $ show ( eval exp env )
             main' env ""
     else 
