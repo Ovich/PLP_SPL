@@ -56,15 +56,17 @@ funcs =
         ),
         ("div", ["N", "M"], Bin "/" (Var "N") (Var "M")),
         ("modulos", ["N", "M"], Bin "%" (Var "N") (Var "M")),
-        ("ackermann", ["N","M"],
+        ("ackermann", ["M","N"],
             If
-            (Var "N")
-            (If (Var "M")
-                  (App "ackermann" [(Bin "-" (Var "N") (Cst 1)), App "ackermann" [Var "N", (Bin "-" (Var "M") (Cst 1))]])
-                  (App "ackermann" [(Bin "-" (Var "N") (Cst 1)), Cst 1]))
-            (Bin "+" (Var "M") (Cst 1))
+            (Bin "==" (Var "M") (Cst 0))
+            (App "succ" [(Var "N")])
+            (If (Bin "==" (Var "N") (Cst 0))
+                (App "ackermann" [(App "pred" [(Var "M")]), Cst 1])
+                (App "ackermann" [(App "pred" [(Var "M")]), App "ackermann" [Var "M", (App "pred" [(Var "N")])]])
+            )
         )
     ]
+
 
 env = (vars, funcs)
 
@@ -125,6 +127,24 @@ eval (App func xs) env = eval x (expand env vars xs) where (vars,x) = extract fu
 def (DefVar name exp) (vars,funcs) =  ((name, eval exp env):vars,funcs)
 def (DefFn name args body) (vars,funcs) = (vars, ((name,args,body):funcs))
 
+-- La Fonction runtime gérè les les cas de figures se produisant dans le main
+-- Elle gére les valeurs evalués a afficher ou des extentions d'environement 
+-- selon les cas de figure
+runtime exp env =
+    do 
+        case exp of
+            DefFn name _ _ 
+                -> let new_env = def exp env in main' new_env ("Fonction '" ++ name ++ "' defined!") 
+            DefVar name _  
+                -> let new_env = def exp env in main' new_env ("Variable '" ++ name ++ "' defined!") 
+            Unary "++" (Var name)
+                -> let incremented = (eval exp env) -- Operateur d'incrémentation nécecite une extention de l'environement
+                       new_env = def (DefVar (name) (Cst incremented)) env 
+                     in main' new_env (show incremented) 
+            _ 
+                -> putStrLn $ show ( eval exp env )
+        main' env ""
+
 main = main' env introMessage
 main' env display = 
   do
@@ -132,15 +152,6 @@ main' env display =
     putStr $ (languageName ++ " > ")
     s <- getLine
     if s /= "EXIT" then
-        do 
-            let exp = parser $ lexer s
-            case exp of
-                DefFn name _ _ -> let new_env = def exp env in main' new_env ("Fonction '" ++ name ++ "' defined!") 
-                DefVar name _  -> let new_env = def exp env in main' new_env ("Variable '" ++ name ++ "' defined!") 
-                Unary "++" (Var name) -> let incremented = (eval exp env) -- Operateur d'incrémentation nécecite une extention de l'environement
-                                             new_env = def (DefVar (name) (Cst incremented)) env 
-                                             in main' new_env (show incremented) 
-                _ -> putStrLn $ show ( eval exp env )
-            main' env ""
+        let exp = parser $ lexer s in runtime exp env
     else 
         return ()
