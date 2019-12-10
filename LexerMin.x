@@ -26,7 +26,7 @@ def                           { \s -> TDef          }
 \,                            { \s -> TComma        } 
 \-\- .*                       { \s -> TComment      }
 \+\+                          { \s -> TSym s        } 
-[\=\*\+\-\!\/\%]              { \s -> TSym s        }
+[\=\*\+\-\!\/\%\^]            { \s -> TSym s        }
 \<|\>|\<\=|\>\=|\=\=|\!\=     { \s -> TCompare s    }
 $digit+                       { \s -> TInt (read s) }   
 $upper [$alpha $digit \_]*    { \s -> TVar s        }   

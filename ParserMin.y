@@ -25,6 +25,7 @@ import LexerMin
     "*"  { TSym "*" }
     "/"  { TSym "/"  }
     "%"  { TSym "%"          }
+    "^"  { TSym "^"          }
     "++" { TSym "++"         }
     "==" { TCompare "=="     }
     "!=" { TCompare "!="     }
@@ -43,7 +44,7 @@ import LexerMin
 %left "<" ">" "==" "!=" "<=" ">=" "," "="
 %left "+" "-" 
 %left "*" "/"
-%left "%" "!" "++" %% 
+%left "%" "!" "++" "^" %% 
 
 -- Règles de la grammaire 
 
@@ -58,6 +59,7 @@ Exp : let var "=" Exp in Exp   { Let $2 $4 $6   }
     | Exp "*" Exp              { Bin "*" $1 $3  }
     | Exp "/" Exp              { Bin "/" $1 $3  } 	
     | Exp "%" Exp              { Bin "%" $1 $3  }
+    | Exp "^" Exp              { Bin "^" $1 $3  }
     | Exp "++"                 { PostInc "++" $1}
     | "++" Exp                 { PreInc "++" $2 }
     | Exp "==" Exp             { Bin "==" $1 $3 }
