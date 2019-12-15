@@ -12,6 +12,7 @@ where
 import Data.Char
 import ParserMin
 import LexerMin
+import Environement
 
 -- Nom du Language
 languageName = "SPL"
@@ -27,57 +28,8 @@ introMessage = "\n" ++ languageName ++ " \
 \Available Operators \t:\tBinary Ops ( + | - | * | / | ^ | % | < | <= | > | >= | == | != )\n\
 \\t\t\t\tUnary Ops  ( - | ++ (postfix and prefix) | ! )\n\n"
 
--- Variables utilisées
-vars = [("X", 12), ("Y", 23), ("Xy", 32)]
-
-funcs =
-    [
-        ("pred",["N"],Bin "-" (Var "N") (Cst 1)),
-        ("fact",["N"],
-            If
-                (Var "N")
-                (Bin "*" (Var "N") (App "fact" [App "pred" [Var "N"]]))
-                (Cst 1)),
-        ("succ",["N"],Bin "+" (Var "N") (Cst 1)),
-        ("add", ["N", "M"], Bin "+" (Var "N") (Var "M")),
-        ("sub", ["N", "M"], Bin "-" (Var "N") (Var "M")),
-        ("pow", ["N", "M"], Bin "^" (Var "N") (Var "M")),
-        ("abs", ["N"], 
-            If
-                (Var "N")
-                (Var "N")
-                (Unary "-" (Var "N"))),
-        ("sum", ["N"], 
-            If
-                (Var "N")
-                (Bin "+" (Var "N") (App "sum" [App "pred" [Var "N"]]))
-                (Cst 0)),
-        ("even", ["N"], Bin "%" (Var "N") (Cst 2)), 
-        ("collatz", ["N"],
-            If
-                (Bin "=" (Var "N") (Cst 1)) 
-                (Cst 0) (
-                    If
-                        (App "even" [(Var "N")])
-                        (Bin "+" (Cst 1) (App "collatz" [Bin "/" (Var "N") (Cst 2)]))
-                        (Bin "+" (Cst 1) (App "collatz" [Bin "+" (Bin "*" (Var "N") (Cst 3)) (Cst 1)]))
-                         )
-        ),
-        ("div", ["N", "M"], Bin "/" (Var "N") (Var "M")),
-        ("modulos", ["N", "M"], Bin "%" (Var "N") (Var "M")),
-        ("ackermann", ["M","N"],
-            If
-            (Bin "==" (Var "M") (Cst 0))
-            (App "succ" [(Var "N")])
-            (If (Bin "==" (Var "N") (Cst 0))
-                (App "ackermann" [(App "pred" [(Var "M")]), Cst 1])
-                (App "ackermann" [(App "pred" [(Var "M")]), App "ackermann" [Var "M", (App "pred" [(Var "N")])]])
-            )
-        )
-    ]
-
--- Environement Prédéfini
-env = (vars, funcs)
+-- Environement Vide
+env = ([], [])
 
 fact n = if (n <= 1) then 1 else eval (Bin "*" (Cst n) (Unary "!" (Cst (n-1)))) env
 bool op x y = if (op x y ) then 1 else 0
@@ -141,29 +93,40 @@ runtime exp env =
     do 
         case exp of
             DefFn name _ _ 
-                -> let new_env = def exp env in main' new_env $ "Fonction '" ++ name ++ "' defined!"
+                -> let new_env = def exp env in repl new_env $ "Fonction '" ++ name ++ "' defined!"
             DefVar name _  
-                -> let new_env = def exp env in main' new_env $ "Variable '" ++ name ++ "' defined!"
+                -> let new_env = def exp env in repl new_env $ "Variable '" ++ name ++ "' defined!"
             PreInc "++" (Var name)
                 -> let incremented = (eval exp env) -- Pré incrémentation renvoi la valeur incrémentée et etends l'environement
                        new_env = def (DefVar (name) (Cst incremented)) env 
-                     in main' new_env (show incremented) 
+                     in repl new_env (show incremented) 
             PostInc "++" (Var name)
                 -> let val = value name env -- On récupère la valeur avant l'incrémentation et on étends l'environement par la suite
                        new_env = def (DefVar (name) (Cst (eval exp env))) env 
-                     in main' new_env (show val) 
-            _   -> main' env $ show $ eval exp env -- Toute expression necessitant que l'evaluation
+                     in repl new_env (show val) 
+            _   -> repl env $ show $ eval exp env -- Toute expression necessitant que l'evaluation
 
-main = main' env introMessage
-main' env display = 
+-- Predefine parcourir et parser le tableau de string contenant des définition de fonctions 
+-- ou des variables et va les ajouter dans l'environement de départ (environement prédéfinis)
+predefine [] env = env
+predefine (x:xs) env = predefine xs (def (parser $ lexer x) env)
+-- vars et funcs sont issue du fichier Environement.hs
+main = repl (predefine funcs (predefine vars env)) introMessage
+repl env display = 
   do
     putStrLn $ display
-    putStr $ (languageName ++ " > ")
-    s <- getLine
-    if s /= "EXIT" then
-        if length s <= 3 then 
-            main' env "Expression too short... try again" 
+    putStr $ (languageName ++ "> ")
+    line <- getLine
+    if line /= "EXIT" then
+        
+        if length line < 1 then 
+            repl env "Expression too short... try again" 
         else 
-            let exp = parser $ lexer s in runtime exp env
+            do
+                let tokens = lexer line
+                putStrLn $ show tokens
+                let ast = parser tokens
+                putStrLn $ show ast
+                runtime ast env
     else 
         return ()
