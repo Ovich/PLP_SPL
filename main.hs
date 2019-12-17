@@ -83,10 +83,23 @@ expand env (v:vs) (x:xs) = ((v,eval x env):vars,funcs)
         (vars,funcs) = expand env vs xs
 
 -- Variables et Fonctions définies par le développeur
-def (DefVar name exp) (vars,funcs) = ((name, eval exp env):vars,funcs)
-def (DefFn name args body) (vars,funcs) = (vars, ((name,args,body):funcs))
+-- Nos 2 fonctions def vont chercher et remplacer une éventuelle occurence de la variable ou de la fonction
+-- ayant le même nom. Elle ne va pas juste empiler comme le fait la fonction expand donnée dans le cours
+def (DefFn new_name new_args new_body) (vars,funcs) = (vars, expander (DefFn new_name new_args new_body) funcs)
+   where 
+       expander (DefFn new_name new_args new_body) [] = (new_name,new_args,new_body):[]
+       expander (DefFn new_name new_args new_body) ((name,args,body):funcs)
+           | name /= new_name = (name,args,body):expander (DefFn new_name new_args new_body) funcs
+           | otherwise = (new_name,new_args,new_body):funcs
 
--- La Fonction runtime s'occupe de gestion des expressions
+def (DefVar new_name new_exp) (vars,funcs) = (expander (DefVar new_name new_exp) vars, funcs)
+   where 
+       expander (DefVar new_name new_exp) [] = (new_name,eval new_exp (vars,[])):[]
+       expander (DefVar new_name new_exp) ((name,exp):vars)
+           | name /= new_name = (name,exp):expander (DefVar new_name new_exp) vars
+           | otherwise = (new_name,eval new_exp (vars,[])):vars
+
+           -- La Fonction runtime s'occupe de gestion des expressions
 -- Elle gère les expressions à evaluer et envoyer la valeur au main pour l'affichage 
 -- ou les expressions qui étendent l'environement : def et ++
 runtime exp env =
@@ -114,6 +127,7 @@ predefine (x:xs) env = predefine xs (def (parser $ lexer x) env)
 main = repl (predefine funcs (predefine vars env)) introMessage
 repl env display = 
   do
+    putStrLn $ show $ env
     putStrLn $ display
     putStr $ (languageName ++ "> ")
     line <- getLine
