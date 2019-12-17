@@ -72,7 +72,8 @@ value name (vars,_) = value' name vars
 
 -- Extraction de la fonction de l'environnement pour l'application de fonctions
 -- Extract cherche la fonction qui porte le nom "name"   
--- Elle donne une exception dans le cas où la fonction appelée n'existe pas dans l'environnement   
+-- Elle donne une exception dans le cas où la fonction appelée n'existe pas dans
+-- l'environnement   
 extract name (_,[]) = error $ "No functions defined : (use def)"
 extract name (_,funcs) = extract' name funcs
     where
@@ -82,8 +83,10 @@ extract name (_,funcs) = extract' name funcs
 
 -- La fonction expand empile les arguments sous forme de variables dans l'environnement
 -- L'existence précédente d'une variable du même nom n'est pas verifiée
--- Utilisée pendant l'application de fonction et sans effets en dehors de cette application de fonction
--- Si une fonction est appelée avec trop d'arguments, seul ceux significatifs seront pris en compte
+-- Utilisée pendant l'application de fonction et sans effets en dehors de cette 
+-- application de fonction
+-- Si une fonction est appelée avec trop d'arguments, seul ceux significatifs seront 
+-- pris en compte
 -- Une exception est produite si l'utilisateur fait un appel sans assez arguments
 expand env [] [] = env
 expand env _ [] = error $ "Too few arguments provided during fonction call"
@@ -92,10 +95,12 @@ expand env (v:vs) (x:xs) = ((v,eval x env):vars,funcs)
         (vars,funcs) = expand env vs xs
 
 -- Variables et Fonctions définies par le développeur
--- Nos 2 fonctions def vont chercher et remplacer une éventuelle occurence de la variable ou de la fonction déjà 
--- existantes dans l'environnement qui a le même nom. 
--- Elle ne va pas juste empiler comme le fait la fonction expand pendant l'application de fonctions
--- car à la différence de expand, l'effet de def reste durant toute l'exécution du programme
+-- Nos 2 fonctions def vont chercher et remplacer une éventuelle occurence de 
+-- la variable ou de la fonction déjà existantes dans l'environnement qui a 
+-- le même nom. 
+-- Elle ne va pas juste empiler comme le fait la fonction expand pendant 
+-- l'application de fonctions car à la différence de expand,
+-- l'effet de def reste durant toute l'exécution du programme
 def (DefFn new_name new_args new_body) all@(vars,funcs) = (vars, def' (DefFn new_name new_args new_body) funcs)
    where 
        def' (DefFn new_name new_args new_body) [] = (new_name,new_args,new_body):[]
@@ -110,20 +115,21 @@ def (DefVar new_name new_exp) all@(vars,funcs) = (def' (DefVar new_name new_exp)
            | name /= new_name = (name,exp):def' (DefVar new_name new_exp) vars
            | otherwise = (new_name,eval new_exp all):vars
 
--- Predefine parcourir et parser le tableau de string contenant des définition de fonctions 
--- ou des variables et va les ajouter dans l'environnement de départ (environnement prédéfinis)
+-- Predefine parcourir et parser le tableau de string contenant des définition de 
+-- fonctions ou des variables et va les ajouter dans l'environnement de départ 
+-- (environnement prédéfinis)
 predefine [] env = env
 predefine (x:xs) env = predefine xs (def (parser $ lexer x) env)
 
 -- vars et funcs sont issues du fichier Environment.hs
--- Lancement à partir de main permet de charger l'environnement avec des fonctions et des variables 
--- prédefinies
+-- Lancement à partir de main permet de charger l'environnement avec des fonctions 
+-- et des variables prédefinies
 main = 
     do
         putStrLn $ introMessage
         repl (predefine funcs (predefine vars env))
 
--- REPL prends en paramètre l'environnement et non pas qu'une liste de fonctions
+-- REPL prend en paramètre l'environnement et non pas qu'une liste de fonctions
 -- Ce REPL permet d'avoir des variables prédéfinies et la définition des variables
 -- nécessitant la possibilité d'extension de la totalité de l'environnement
 repl env = 
@@ -153,20 +159,20 @@ repl env =
                                     putStrLn $ "Variable '" ++ name ++ "' defined!"
                                     repl new_env 
                     PreInc "++" (Var name)
-                        -> let incremented = (eval ast env) -- Pré incrémentation renvoi la valeur incrémentée et etends l'environnement
+                        -> let incremented = (eval ast env) -- Pré incrémentation renvoie la valeur incrémentée et étend l'environnement
                                new_env = def (DefVar (name) (Cst incremented)) env 
                             in 
                                 do
                                     putStrLn $ show incremented
                                     repl new_env 
                     PostInc "++" (Var name)
-                        -> let val = value name env -- On récupère la valeur avant l'incrémentation et on étends l'environnement par la suite
+                        -> let val = value name env -- On récupère la valeur avant l'incrémentation et on étend l'environnement par la suite
                                new_env = def (DefVar (name) (Cst (eval ast env))) env 
                             in 
                                 do
                                     putStrLn $ show val
                                     repl new_env 
-                    _   ->   -- Toute expression necessitant que l'evaluation
+                    _   ->   -- Toute expression nécessitant que l'évaluation
                         do
                             putStrLn $ show $ eval ast env 
                             repl env 
