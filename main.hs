@@ -57,7 +57,8 @@ eval (Unary "-" x) env = - eval x env -- Nombres Négatifs
 eval (Unary "!" x) env = fact (eval x env) -- Factorielle
 eval (PostInc "++" x) env = (eval x env) + 1  -- Post Incrémentation
 eval (PreInc "++" x) env = (eval x env) + 1  -- Pré incrémentation
-
+-- Evaluation de let
+eval (Let name exp1 exp2) env = eval exp2 (((name, eval exp1 env):(fst env)), snd env)
 -- Evaluation des conditions (if)
 eval (If cond x y) env = if eval cond env > 0 then eval x env else eval y env
 -- Evaluation de Fonctions
