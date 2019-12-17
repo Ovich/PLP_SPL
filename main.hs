@@ -95,19 +95,19 @@ expand env (v:vs) (x:xs) = ((v,eval x env):vars,funcs)
 -- existantes dans l'environement qui a le même nom. 
 -- Elle ne va pas juste empiler comme le fait la fonction expand pendant l'application de fonctions
 -- car à la différence de expand l'éffet de def reste durant toute l'execution du programme
-def (DefFn new_name new_args new_body) (vars,funcs) = (vars, def' (DefFn new_name new_args new_body) funcs)
+def (DefFn new_name new_args new_body) all@(vars,funcs) = (vars, def' (DefFn new_name new_args new_body) funcs)
    where 
        def' (DefFn new_name new_args new_body) [] = (new_name,new_args,new_body):[]
        def' (DefFn new_name new_args new_body) ((name,args,body):funcs)
            | name /= new_name = (name,args,body):def' (DefFn new_name new_args new_body) funcs
            | otherwise = (new_name,new_args,new_body):funcs
 
-def (DefVar new_name new_exp) (vars,funcs) = (def' (DefVar new_name new_exp) vars, funcs)
+def (DefVar new_name new_exp) all@(vars,funcs) = (def' (DefVar new_name new_exp) vars, funcs)
    where 
-       def' (DefVar new_name new_exp) [] = (new_name,eval new_exp (vars,[])):[]
+       def' (DefVar new_name new_exp) [] = (new_name,eval new_exp all):[]
        def' (DefVar new_name new_exp) ((name,exp):vars)
            | name /= new_name = (name,exp):def' (DefVar new_name new_exp) vars
-           | otherwise = (new_name,eval new_exp (vars,[])):vars
+           | otherwise = (new_name,eval new_exp all):vars
 
 -- Predefine parcourir et parser le tableau de string contenant des définition de fonctions 
 -- ou des variables et va les ajouter dans l'environement de départ (environement prédéfinis)
