@@ -15,7 +15,7 @@ import Environment
 languageName = "SPL"
 introMessage = "\n" ++ languageName ++ " \ 
 \Ready : To exit type 'EXIT' \n\n \
-\Predefined Fonctions \t:\tsucc(X), pred(X), fact(X), add(X,Y), sub(X,Y), pow(X,Y), abs(X), sum(X), even(X), \n \
+\Predefined Fonctions \t:\tsucc(X), pred(X), fact(X), add(X,Y), sub(X,Y), pow(X,Y), abs(X), sum(X), odd(X), \n \
 \\t\t\t\tcollatz(X), div(X,Y), modulos(X,Y), ackermann(X,Y), mccarthy(X), euclide(X,Y),\n\
 \\t\t\t\tpuissance(X,Y) \n\n \
 \Identifier rules \t:\tFonction name starts with lowercase\n\ 
